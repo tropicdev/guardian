@@ -1,11 +1,11 @@
 import { ApplyOptions } from '@sapphire/decorators';
 import { Listener } from '@sapphire/framework';
 import { ButtonInteraction, EmbedBuilder, Events, GuildMember, Interaction, Message, TextChannel } from 'discord.js';
-import { z } from 'zod';
-import { client } from '..';
-import { env } from '../env/bot';
-import { APPLICATION_ROW, BUTTON_IDS } from '../lib/constants';
-import type { Responses } from '../lib/types';
+import { client } from '../..';
+import { db } from '../../database/db';
+import { APPLICATION_ROW, BUTTON_IDS } from '../../lib/constants';
+import { CONFIG } from '../../lib/setup';
+import type { Responses } from '../../lib/types';
 
 @ApplyOptions<Listener.Options>({ event: Events.InteractionCreate, name: 'Member Apply' })
 export class ApplyButtonEvent extends Listener {
@@ -13,16 +13,6 @@ export class ApplyButtonEvent extends Listener {
 		if (!interaction.isButton() || interaction.member?.user.bot || interaction.customId !== BUTTON_IDS.APPLY) return;
 
 		try {
-			const flag = await this.getSettings(interaction.guildId!);
-
-			if (!flag) {
-				return interaction.reply({ content: 'Sorry, the applications module does not seem to be configured', ephemeral: true });
-			}
-
-			if ((flag & 1) === 0) {
-				return interaction.reply({ content: 'Sorry, the applications module does not seem to be configured', ephemeral: true });
-			}
-
 			return this.sendQuestions(interaction);
 		} catch (error) {
 			client.logger.error(error);
@@ -30,38 +20,10 @@ export class ApplyButtonEvent extends Listener {
 		}
 	}
 
-	private async getSettings(guild_id: string) {
-		try {
-			const res = await fetch(`${env.API_URL}/v1/features/guilds/${guild_id}`);
-
-			const FlagSchema = z
-				.object({
-					featureFlag: z.number()
-				})
-				.nullable();
-			const data = await FlagSchema.parseAsync(await res.json());
-
-			if (!data) {
-				return null;
-			}
-
-			return data.featureFlag;
-		} catch (error) {
-			client.logger.error(error);
-			return null;
-		}
-	}
-
 	private async sendQuestions(interaction: ButtonInteraction) {
 		const member = interaction.member as GuildMember;
 
-		const res = await fetch(`${env.API_URL}/v1/questions/guilds/${interaction.guildId}`);
-
-		const QuestionSchema = z.string().array().nullable();
-
-		const questions = await QuestionSchema.parseAsync(await res.json());
-
-		if (!questions) return interaction.reply('There are no questions configured');
+		const questions = CONFIG.applications.questions;
 
 		interaction.reply({ content: 'Check your direct messages', ephemeral: true });
 
@@ -96,19 +58,7 @@ export class ApplyButtonEvent extends Listener {
 	}
 
 	async postApplication(responses: Responses, member: GuildMember) {
-		const res = await fetch(`${env.API_URL}/v1/settings/application/guilds/${member.guild.id}`);
-
-		const ChannelSchema = z
-			.object({
-				applicationChannel: z.string()
-			})
-			.nullish();
-
-		const setting = await ChannelSchema.parseAsync(await res.json());
-
-		if (!setting) return;
-
-		const channel = (await client.channels.fetch(setting.applicationChannel)) as TextChannel;
+		const channel = (await client.channels.fetch(CONFIG.applications.channel)) as TextChannel;
 
 		//TODO Log error
 		if (!channel) return;
@@ -137,16 +87,14 @@ export class ApplyButtonEvent extends Listener {
 			components: [APPLICATION_ROW]
 		});
 
-		await fetch(`${env.API_URL}/v1/application/guilds/${member.guild.id}`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				messageId: message.id,
-				applicantId: member.id,
-				content: JSON.stringify(responses)
+		await db
+			.insertInto('application')
+			.values({
+				id: message.id,
+				applicant_id: member.id,
+				content: JSON.stringify(responses),
+				status: 'PENDING'
 			})
-		});
+			.execute();
 	}
 }

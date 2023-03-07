@@ -12,16 +12,9 @@ import {
 	TextInputStyle,
 	type Interaction
 } from 'discord.js';
-import { TypeOf, z } from 'zod';
-import { client } from '..';
-import { env } from '../env/bot';
-import { APPLICATION_ROW, BUTTON_IDS, DISABLED_APPLICATION_ROW, MODAL_IDS } from '../lib/constants';
-
-const ApplicationSchema = z
-	.object({
-		applicantId: z.string()
-	})
-	.nullish();
+import { client } from '../..';
+import { db } from '../../database/db';
+import { APPLICATION_ROW, BUTTON_IDS, DISABLED_APPLICATION_ROW, MODAL_IDS } from '../../lib/constants';
 
 @ApplyOptions<Listener.Options>({ event: Events.InteractionCreate, name: 'Deny Member' })
 export class DenyButtonEvent extends Listener {
@@ -29,15 +22,17 @@ export class DenyButtonEvent extends Listener {
 		if (!interaction.isButton() || interaction.member?.user.bot || interaction.customId !== BUTTON_IDS.DENY) return;
 
 		try {
-			const res = await fetch(`${env.API_URL}/v1/deny/guilds/${interaction.guildId}/application/${interaction.message.id}`);
-
-			const application = await ApplicationSchema.parseAsync(await res.json());
+			const application = await db
+				.selectFrom('application')
+				.select(['id', 'applicant_id'])
+				.where('id', '=', interaction.message.id)
+				.executeTakeFirst();
 
 			if (!application) return interaction.reply({ content: 'Could not find application in database', ephemeral: true });
 
 			const modal = new ModalBuilder().setCustomId(MODAL_IDS.REASON).setTitle('Botler');
 
-			const member = await interaction.guild?.members.fetch(application.applicantId);
+			const member = await interaction.guild?.members.fetch(application.applicant_id);
 
 			if (!member) return interaction.reply('Member could not be found. Are they still in the server ?');
 
@@ -79,25 +74,24 @@ export class DenyButtonEvent extends Listener {
 
 			const reason = submitted.fields.getTextInputValue(MODAL_IDS.ADMIN_REASON);
 
-			return this.denyApplicant(interaction, reason, application);
+			return this.denyApplicant(interaction, reason, application.id, application.applicant_id);
 		} catch (error) {
 			client.logger.error(error);
 			return interaction.reply({ content: 'An error occured while fetching the application', ephemeral: true });
 		}
 	}
 
-	async denyApplicant(interaction: ButtonInteraction, response: string, application: TypeOf<typeof ApplicationSchema>) {
+	async denyApplicant(interaction: ButtonInteraction, response: string, applicationId: string, applicantId: string) {
 		try {
-			await fetch(`${env.API_URL}/v1/deny/guilds/${interaction.guildId}/application/${interaction.message.id}`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					adminId: interaction.user.id,
-					reason: response
+			await db
+				.insertInto('application_meta')
+				.values({
+					id: applicationId,
+					response: response,
+					admin_id: interaction.user.id
 				})
-			});
+				.execute();
+
 			const newEmbed = EmbedBuilder.from(interaction.message.embeds[0]).setColor('Red');
 			interaction.message.edit({ embeds: [newEmbed], components: [] });
 			const admin = interaction.member as GuildMember;
@@ -114,7 +108,7 @@ export class DenyButtonEvent extends Listener {
 				.setDescription(response)
 				.setTimestamp();
 
-			const applicant = await interaction.guild?.members.fetch(application!.applicantId);
+			const applicant = await interaction.guild?.members.fetch(applicantId);
 
 			if (!applicant) return 'Member could not be found. Are they still in the server ?';
 

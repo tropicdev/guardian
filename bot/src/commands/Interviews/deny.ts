@@ -2,9 +2,8 @@ import { ApplyOptions, RequiresGuildContext } from '@sapphire/decorators';
 import { Command } from '@sapphire/framework';
 import { send } from '@sapphire/plugin-editable-commands';
 import { EmbedBuilder, Message } from 'discord.js';
-import { z } from 'zod';
 import { client } from '../..';
-import { env } from '../../env/bot';
+import { db } from '../../database/db';
 
 @ApplyOptions<Command.Options>({
 	description: 'Deny Member',
@@ -28,18 +27,39 @@ export class UserCommand extends Command {
 		try {
 			const { value } = interaction.options.get('reason', true);
 
-			const application = await this.getApplication(interaction.channelId, interaction.guildId!);
+			const application = await this.getApplicant(interaction.channelId);
 
 			if (!value) return interaction.reply({ content: 'Please provide a reason', ephemeral: true });
-
-			await this.updateApplication(interaction.channelId, interaction.guildId!, interaction.user.id);
 
 			if (application instanceof Error || !application)
 				return interaction.reply({ content: 'Something went wrong trying to deny member', ephemeral: true });
 
-			const member = await interaction.guild?.members.fetch(application.applicantId);
+			const member = await interaction.guild?.members.fetch(application.applicant_id);
 
 			if (!member) return interaction.reply({ content: 'Member not found', ephemeral: true });
+
+			await db
+				.updateTable('interview')
+				.set({ status: 'DENIED' })
+				.where('thread_id', '=', interaction.channelId)
+				.execute()
+				.catch((error) => {
+					client.logger.error(error);
+					return interaction.reply({ content: 'Something went wrong trying to deny member', ephemeral: true });
+				});
+
+			await db
+				.insertInto('application_meta')
+				.values({
+					id: application.id,
+					admin_id: interaction.member!.user.id,
+					response: value.toString()
+				})
+				.execute()
+				.catch((error) => {
+					client.logger.error(error);
+					return interaction.reply({ content: 'Something went wrong trying to deny member', ephemeral: true });
+				});
 
 			const denyEmbed = new EmbedBuilder()
 				.setColor('Red')
@@ -72,44 +92,13 @@ export class UserCommand extends Command {
 		return interaction.reply('Something went wrong');
 	}
 
-	private async getApplication(threadId: string, guildId: string) {
-		try {
-			const response = await fetch(`${env.API_URL}/v1/deny/guilds/${guildId}/application/${threadId}`);
-
-			const data = await response.json();
-
-			const ApplicationSchema = z
-				.object({
-					applicantId: z.string()
-				})
-				.nullish();
-
-			const result = await ApplicationSchema.parseAsync(data);
-
-			return result;
-		} catch (error) {
-			client.logger.error(error);
-			return new Error('Something went wrong');
-		}
-	}
-
-	private async updateApplication(threadId: string, guildId: string, adminId: string) {
-		try {
-			await fetch(`${env.API_URL}/v1/deny/guilds/${guildId}/application/${threadId}`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					response: 'Accepted Member',
-					adminId: adminId
-				})
-			});
-
-			return;
-		} catch (error) {
-			client.logger.error(error);
-			return new Error('Something went wrong');
-		}
+	private async getApplicant(threadId: string) {
+		const applicant = await db
+			.selectFrom('application')
+			.innerJoin('interview', 'interview.application_id', 'id')
+			.select(['applicant_id', 'id'])
+			.where('thread_id', '=', threadId)
+			.executeTakeFirst();
+		return applicant;
 	}
 }
