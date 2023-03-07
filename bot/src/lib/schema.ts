@@ -34,5 +34,12 @@ export const configSchema = z.object({
 			}),
 			clean_whitelist_every: z.object({ time: z.number(), unit: z.string() })
 		})
+	}),
+	database: z.object({
+		host: z.string().ip(),
+		port: z.number(),
+		user: z.string(),
+		password: z.string(),
+		name: z.string()
 	})
 });
