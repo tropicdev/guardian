@@ -7,3 +7,4 @@ services:
       target: development
     volumes:
       - "./bot:/opt/app:rw"
+      - ".config.json:/opt/app/config/config.json:ro"
