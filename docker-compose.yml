@@ -1,0 +1,9 @@
+version: "3.9"
+
+services:
+  guardian:
+    build:
+      context: ./bot
+      target: development
+    volumes:
+      - "./bot:/opt/app:rw"

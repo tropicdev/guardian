@@ -1,0 +1,43 @@
+{
+  "prefix": "!",
+  "console_channel": "",
+  "bot_token":"",
+  "api_token":"",
+  "api_host":"",
+  "status":"New Applications",
+  "join_channel":"",
+  "join_message": "",
+  "accept_channel":"",
+  "accept_message":"",
+  "member_role": "",
+  "applications": {
+    "enabled": "true",
+    "timeout": 5,
+    "channel":"",
+    "questions":[]
+  },
+  "interviews": {
+    "enabled": true,
+    "notification": "",
+    "role":"",
+    "channel":"",
+    "private": true    
+  },
+  "whitelist_manager":{
+    "enabled": true,
+    "servers": [
+      "server-id"
+    ],
+    "inactivity": {
+      "enabled":true,
+      "remove_inactive_player_after":{
+        "time": 60,
+        "unit": "DAYS"
+      },
+      "clean_whitelist_every": {
+        "time": 1,
+        "unit": "DAYS"
+      }
+    }
+  }
+}
