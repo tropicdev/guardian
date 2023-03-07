@@ -69,7 +69,10 @@ export class AcceptButtonEvent extends Listener {
 				.setTimestamp()
 				.setFooter({ text: `Member accepted by ${interaction.member!.user.username}` });
 
-			return await interaction.update({ embeds: [newEmbed], components: [] });
+			return await interaction.update({ embeds: [newEmbed], components: [] }).catch((error) => {
+				client.logger.error(error);
+				return interaction.reply({ content: 'Something went wrong trying to accepting member', ephemeral: true });
+			});
 		} catch (error) {
 			client.logger.error(error as Error);
 			return interaction.reply({ content: 'Could not create interview', ephemeral: true });

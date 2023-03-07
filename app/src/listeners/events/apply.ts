@@ -25,7 +25,14 @@ export class ApplyButtonEvent extends Listener {
 
 		const questions = CONFIG.applications.questions;
 
-		interaction.reply({ content: 'Check your direct messages', ephemeral: true });
+		await interaction.reply({ content: 'Check your direct messages', ephemeral: true }).catch((error) => {
+			client.logger.error(error);
+			return interaction.reply({
+				content:
+					'Something went wrong trying to send questions to your Direct Messages. If you have direct messages disabled from this server, please enable them and try again.',
+				ephemeral: true
+			});
+		});
 
 		let index = 0;
 
@@ -52,7 +59,10 @@ export class ApplyButtonEvent extends Listener {
 
 		const reply = new EmbedBuilder().setTitle('Application Received').setColor('Yellow').setTimestamp();
 
-		member.send({ embeds: [reply] });
+		await member.send({ embeds: [reply] }).catch((error) => {
+			client.logger.error(error);
+			return interaction.reply({ content: 'Sorry, something went wrong', ephemeral: true });
+		});
 
 		return this.postApplication(responses, member);
 	}

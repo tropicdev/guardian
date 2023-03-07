@@ -71,9 +71,15 @@ export class UserCommand extends Command {
 				.addFields({ name: 'Reason', value: `${value}`, inline: true })
 				.setTimestamp();
 
-			await member.send({ embeds: [denyEmbed] });
+			await member.send({ embeds: [denyEmbed] }).catch((error) => {
+				client.logger.error(error);
+				return interaction.reply({ content: 'Something went wrong trying to denying member', ephemeral: true });
+			});
 
-			await member.kick(value.toString());
+			await member.kick(value.toString()).catch((error) => {
+				client.logger.error(error);
+				return interaction.reply({ content: 'Something went wrong trying to denying member', ephemeral: true });
+			});
 
 			const embed = new EmbedBuilder()
 				.setColor('Red')
@@ -85,13 +91,15 @@ export class UserCommand extends Command {
 				.addFields({ name: 'Member', value: `${member}`, inline: true }, { name: 'Reason', value: `${value}`, inline: true })
 				.setTimestamp();
 
-			return await interaction.reply({ embeds: [embed] });
+			return await interaction.reply({ embeds: [embed] }).catch((error) => {
+				client.logger.error(error);
+				return interaction.reply({ content: 'Something went wrong trying to denying member', ephemeral: true });
+			});
 		} catch (error) {
 			client.logger.error(error);
+			return interaction.reply('Something went wrong');
 		}
-		return interaction.reply('Something went wrong');
 	}
-
 	private async getApplicant(threadId: string) {
 		const applicant = await db
 			.selectFrom('application')
