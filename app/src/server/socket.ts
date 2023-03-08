@@ -29,6 +29,8 @@ io.on('connection', (socket) => {
 		return;
 	}
 
+	client.logger.info('Socket connected');
+
 	socket.join(CONFIG.client_id);
 
 	socket.on(EVENTS.ELDER_MEMBER_BAN, async (msg: BanEvent) => {
@@ -124,12 +126,12 @@ io.on('connection', (socket) => {
 
 	socket.on(EVENTS.SUCCESS, async (msg: Success) => {
 		try {
+			const console = (await client.channels.fetch(CONFIG.console_channel)) as TextChannel;
+
+			if (!console) return;
+
 			if (msg.success) {
 				client.logger.info('Successfully sent event to server');
-
-				const console = (await client.channels.fetch(CONFIG.console_channel)) as TextChannel;
-
-				if (!console) return;
 
 				const embed = new EmbedBuilder()
 					.setColor('Green')
@@ -143,9 +145,22 @@ io.on('connection', (socket) => {
 
 				console.send({ embeds: [embed] });
 				return;
-			}
+			} else {
+				client.logger.info('Failed to send event to server');
 
-			client.logger.error('Failed to send event to server');
+				const embed = new EmbedBuilder()
+					.setColor('Red')
+					.setTitle(`Error`)
+					.setAuthor({
+						name: 'Guardian',
+						iconURL: 'https://cdn.discordapp.com/avatars/1063626648399921170/60021a9282221d831512631d8e82b33d.png'
+					})
+					.addFields({ name: 'Message', value: `${msg.msg}`, inline: true }, { name: 'Server ID', value: `${msg.server_id}`, inline: true })
+					.setTimestamp();
+
+				console.send({ embeds: [embed] });
+				return;
+			}
 		} catch (error) {
 			client.logger.error(error);
 			return;

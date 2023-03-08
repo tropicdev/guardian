@@ -38,8 +38,6 @@ export interface Member {
 export interface Server {
 	id: Generated<string>;
 	name: Generated<string>;
-	ip_address: string;
-	token: string;
 }
 
 export interface Session {

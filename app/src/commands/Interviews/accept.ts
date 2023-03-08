@@ -152,7 +152,7 @@ export class UserCommand extends Command {
 			.setTimestamp();
 
 		const event = {
-			id: mojangUser.id,
+			id: addDashes(mojangUser.id),
 			name: mojangUser.name
 		};
 

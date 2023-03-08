@@ -1,4 +1,4 @@
-import { Guild, Events, GuildMember } from 'discord.js';
+import { Guild, Events, PartialGuildMember } from 'discord.js';
 import { Listener } from '@sapphire/framework';
 import { ApplyOptions } from '@sapphire/decorators';
 import { z } from 'zod';
@@ -9,10 +9,9 @@ import { EVENTS } from '../../lib/constants';
 
 @ApplyOptions<Listener.Options>({ event: Events.GuildBanAdd, name: 'Handle Guild Member Ban' })
 export class MemberBan extends Listener {
-	public async run(guild: Guild, member: GuildMember) {
+	public async run(guild: Guild, member: PartialGuildMember) {
+		console.log(member);
 		try {
-			if (member.user.bot) return;
-
 			await db
 				.updateTable('member')
 				.where('discord_id', '=', member.id)
@@ -49,10 +48,10 @@ export class MemberBan extends Listener {
 
 @ApplyOptions<Listener.Options>({ event: Events.GuildMemberRemove, name: 'Handle Guild Member Kick/Leave' })
 export class MemberRemove extends Listener {
-	public async run(guild: Guild, member: GuildMember) {
-		try {
-			if (member.user.bot) return;
+	public async run(guild: Guild, member: PartialGuildMember) {
+		console.log(member);
 
+		try {
 			await db
 				.updateTable('member')
 				.where('discord_id', '=', member.id)
