@@ -6,5 +6,4 @@ services:
       context: ./app
       target: development
     volumes:
-      - "./app:/opt/app:rw"
-      - "./config/:/opt/app/config:rw"
+      - ./app:/opt/app

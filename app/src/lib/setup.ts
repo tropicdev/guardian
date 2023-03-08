@@ -11,7 +11,7 @@ import { inspect } from 'util';
 import { configSchema } from './schema';
 import fs from 'node:fs';
 
-const configData = fs.readFileSync('./config.json', 'utf-8');
+const configData = fs.readFileSync('./config/config.json', 'utf-8');
 
 // Validate config
 export const CONFIG = configSchema.parse(JSON.parse(configData));

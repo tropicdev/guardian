@@ -18,13 +18,6 @@ export interface ApplicationMeta {
 	responded_at: Generated<Date>;
 }
 
-export interface Ban {
-	id: Generated<string>;
-	member_id: string;
-	admin_id: string;
-	reason: Generated<string | null>;
-}
-
 export interface Interview {
 	thread_id: string;
 	application_id: string;
@@ -37,6 +30,7 @@ export interface Member {
 	id: Generated<string>;
 	discord_id: string;
 	mojang_id: string;
+	status: Generated<'ACTIVE' | 'LEFT' | 'BANNED'>;
 	joined_at: Generated<Date>;
 	updated_at: Generated<Date>;
 }
@@ -60,7 +54,6 @@ export interface Session {
 export interface DB {
 	application: Application;
 	application_meta: ApplicationMeta;
-	ban: Ban;
 	interview: Interview;
 	member: Member;
 	server: Server;

@@ -24,6 +24,7 @@
 		"kysely": "^0.23.5",
 		"mysql2": "^3.2.0",
 		"reflect-metadata": "^0.1.13",
+		"socket.io": "^4.6.1",
 		"zod": "^3.21.3"
 	},
 	"devDependencies": {
@@ -51,5 +52,9 @@
 		"predocker:watch": "pnpm install",
 		"docker:watch": "tsc-watch --onSuccess \"node ./dist/index.js\""
 	},
-	"prettier": "@sapphire/prettier-config"
+	"prettier": "@sapphire/prettier-config",
+	"optionalDependencies": {
+		"bufferutil": "^4.0.7",
+		"utf-8-validate": "^5.0.2"
+	}
 }

@@ -6,7 +6,9 @@ export const configSchema = z.object({
 	console_channel: z.string(),
 	bot_token: z.string(),
 	api_token: z.string(),
-	api_host: z.string().ip(),
+	api_port: z.number(),
+	guild_id: z.string(),
+	client_id: z.string(),
 	status: z.string().optional(),
 	join_channel: z.string(),
 	join_message: z.string(),
@@ -26,7 +28,6 @@ export const configSchema = z.object({
 		private: z.boolean()
 	}),
 	whitelist_manager: z.object({
-		servers: z.array(z.string()),
 		inactivity: z.object({
 			remove_inactive_player_after: z.object({
 				time: z.number(),

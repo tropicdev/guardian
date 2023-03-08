@@ -41,6 +41,7 @@ ENV NODE_OPTIONS="--enable-source-maps"
 
 COPY package.json .
 COPY tsconfig.json .
+COPY config/config.json .
 
 RUN sed -i 's/"prepare": "husky install\( .github\/husky\)\?"/"prepare": ""/' ./package.json
 

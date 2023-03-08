@@ -6,6 +6,8 @@ import { ApplyOptions, RequiresGuildContext } from '@sapphire/decorators';
 import { z } from 'zod';
 import { db } from '../../database/db';
 import { CONFIG } from '../../lib/setup';
+import { io } from '../../server/socket';
+import { EVENTS } from '../../lib/constants';
 
 @ApplyOptions<Command.Options>({
 	description: 'Accept Member',
@@ -100,7 +102,6 @@ export class UserCommand extends Command {
 			.execute()
 			.catch((error) => {
 				client.logger.error(error);
-				return interaction.reply({ content: 'Something went wrong trying to accept member', ephemeral: true });
 			});
 
 		await db
@@ -110,7 +111,6 @@ export class UserCommand extends Command {
 			.execute()
 			.catch((error) => {
 				client.logger.error(error);
-				return interaction.reply({ content: 'Something went wrong trying to accept member', ephemeral: true });
 			});
 
 		await db
@@ -123,7 +123,6 @@ export class UserCommand extends Command {
 			.execute()
 			.catch((error) => {
 				client.logger.error(error);
-				return interaction.reply({ content: 'Something went wrong trying to accept member', ephemeral: true });
 			});
 
 		await member.roles.remove(interviewRole).catch((error) => {
@@ -151,6 +150,13 @@ export class UserCommand extends Command {
 			.addFields({ name: 'Discord Name', value: `${member}`, inline: true }, { name: 'IGN', value: `${mojangUser.name}`, inline: true })
 			.setImage(`https://crafatar.com/renders/body/${mojangUser.id}?scale=3`)
 			.setTimestamp();
+
+		const event = {
+			id: mojangUser.id,
+			name: mojangUser.name
+		};
+
+		io.emit(EVENTS.GUARDIAN_MEMBER_ADD, event);
 
 		return await interaction.reply({ embeds: [embed] }).catch(async (err) => {
 			client.logger.error(err);

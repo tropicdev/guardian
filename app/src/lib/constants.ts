@@ -13,6 +13,16 @@ export const MODAL_IDS = {
 	ADMIN_REASON: 'BOTLER:REASON'
 } as const;
 
+export const EVENTS = {
+	GUARDIAN_MEMBER_BAN: 'GUARDIAN:MEMBER_BAN',
+	GUARDIAN_MEMBER_LEAVE: 'GUARDIAN:MEMBER_LEAVE',
+	GUARDIAN_MEMBER_ADD: 'GUARDIAN:MEMBER_ADD',
+	ELDER_MEMBER_BAN: 'ELDER:MEMBER_BAN',
+	ELDER_MEMBER_SESSION_START: 'ELDER:MEMBER_SESSION_START',
+	ELDER_MEMBER_SESSION_END: 'ELDER:MEMBER_SESSION_END',
+	SUCCESS: 'SUCCESS'
+} as const;
+
 export const APPLICATION_ROW = new ActionRowBuilder<ButtonBuilder>()
 	.addComponents(new ButtonBuilder().setCustomId(BUTTON_IDS.ACCEPT).setStyle(3).setLabel('Accept').setEmoji('✔️'))
 	.addComponents(new ButtonBuilder().setCustomId(BUTTON_IDS.DENY).setStyle(4).setLabel('Deny').setEmoji('❌'));

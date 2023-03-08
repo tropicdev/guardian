@@ -1,92 +1,105 @@
-// import { Guild, Events, GuildMember } from 'discord.js';
-// import { Listener } from '@sapphire/framework';
-// import { ApplyOptions } from '@sapphire/decorators';
-// import { z } from 'zod';
+import { Guild, Events, GuildMember } from 'discord.js';
+import { Listener } from '@sapphire/framework';
+import { ApplyOptions } from '@sapphire/decorators';
+import { z } from 'zod';
+import { db } from '../../database/db';
+import { client } from '../..';
+import { io } from '../../server/socket';
+import { EVENTS } from '../../lib/constants';
 
-// @ApplyOptions<Listener.Options>({ event: Events.GuildBanAdd, name: 'Handle Guild Member Ban' })
-// export class MemberBan extends Listener {
-// 	public async run(guild: Guild, member: GuildMember, reason: string) {
-// 		try {
-// 			if (member.user.bot) return;
+@ApplyOptions<Listener.Options>({ event: Events.GuildBanAdd, name: 'Handle Guild Member Ban' })
+export class MemberBan extends Listener {
+	public async run(guild: Guild, member: GuildMember, reason: string) {
+		try {
+			if (member.user.bot) return;
 
-// 			const player_query = {
-// 				name: 'ban-player-query',
-// 				text: 'update socrates.player set status = $1 where discord_id = $2 and guild_id = $3;',
-// 				values: [PlayerStatus.BANNED, member.id, guild.id]
-// 			};
+			await db
+				.updateTable('member')
+				.where('discord_id', '=', member.id)
+				.set({
+					status: 'BANNED'
+				})
+				.executeTakeFirst();
 
-// 			const { rows } = await pg.query(player_query);
+			const memberProfile = await db.selectFrom('member').selectAll().where('discord_id', '=', member.id).executeTakeFirst();
 
-// 			const data = await PlayerSchema.parseAsync(rows[0]);
+			if (!memberProfile) {
+				client.logger.error(`Player ${member.id} not found`);
+				return;
+			}
 
-// 			const player_data = await getMojangProfile(data.id);
+			const mojangProfile = await getMojangProfile(memberProfile.mojang_id);
 
-// 			if (!player_data) {
-// 				client.logger.error(`Player ${data.discord_id} not found`);
-// 				return;
-// 			}
+			if (!mojangProfile) {
+				client.logger.error(`Player ${member.user} not found`);
+				return;
+			}
 
-// 			const event: BotlerBanEvent = {
-// 				id: player_data.id,
-// 				name: player_data.name,
-// 				reason: reason
-// 			};
+			const event = {
+				id: mojangProfile.id,
+				name: mojangProfile.name,
+				reason: reason
+			};
 
-// 			ws.emit(EVENTS.BOTLER_MEMBER_BAN, event);
-// 		} catch (error) {
-// 			client.logger.error(error);
-// 		}
-// 	}
-// }
+			io.emit(EVENTS.GUARDIAN_MEMBER_BAN, event);
+		} catch (error) {
+			client.logger.error(error);
+		}
+	}
+}
 
-// @ApplyOptions<Listener.Options>({ event: Events.GuildMemberRemove, name: 'Handle Guild Member Kick/Leave' })
-// export class MemberRemove extends Listener {
-// 	public async run(guild: Guild, member: GuildMember) {
-// 		try {
-// 			if (member.user.bot) return;
+@ApplyOptions<Listener.Options>({ event: Events.GuildMemberRemove, name: 'Handle Guild Member Kick/Leave' })
+export class MemberRemove extends Listener {
+	public async run(guild: Guild, member: GuildMember) {
+		try {
+			if (member.user.bot) return;
 
-// 			const player_query = {
-// 				name: 'remove-player-query',
-// 				text: 'update socrates.player set status = $1 where discord_id = $2 and guild_id = $3;',
-// 				values: [PlayerStatus.REMOVED, member.id, guild.id]
-// 			};
+			await db
+				.updateTable('member')
+				.where('discord_id', '=', member.id)
+				.set({
+					status: 'LEFT'
+				})
+				.executeTakeFirst();
 
-// 			const { rows } = await pg.query(player_query);
+			const memberProfile = await db.selectFrom('member').selectAll().where('discord_id', '=', member.id).executeTakeFirst();
 
-// 			const data = await PlayerSchema.parseAsync(rows[0]);
+			if (!memberProfile) {
+				client.logger.error(`Player ${member.id} not found`);
+				return;
+			}
 
-// 			const player_data = await getMojangProfile(data.id);
+			const mojangProfile = await getMojangProfile(memberProfile.mojang_id);
 
-// 			if (!player_data) {
-// 				client.logger.error(`Player ${data.discord_id} not found`);
-// 				return;
-// 			}
+			if (!mojangProfile) {
+				client.logger.error(`Player ${member.user} not found`);
+				return;
+			}
+			const event = {
+				id: mojangProfile.id,
+				name: mojangProfile.name
+			};
 
-// 			const event: BotlerRemoveEvent = {
-// 				id: player_data.id,
-// 				name: player_data.name
-// 			};
+			io.emit(EVENTS.GUARDIAN_MEMBER_LEAVE, event);
+		} catch (error) {
+			client.logger.error(error);
+		}
+	}
+}
 
-// 			ws.emit(EVENTS.BOTLER_MEMBER_REMOVE, event);
-// 		} catch (error) {
-// 			client.logger.error(error);
-// 		}
-// 	}
-// }
+async function getMojangProfile(id: string) {
+	const response = await fetch(`https://sessionserver.mojang.com/session/minecraft/profile/${id}`);
 
-// async function getMojangProfile(id: string) {
-// 	const response = await fetch(`https://sessionserver.mojang.com/session/minecraft/profile/${id}`);
+	if (response.status === 204 || response.status === 404) {
+		return null;
+	}
 
-// 	if (response.status === 204 || response.status === 404) {
-// 		return null;
-// 	}
+	const mojangProfileSchema = z.object({
+		id: z.string(),
+		name: z.string()
+	});
 
-// 	const mojangProfileSchema = z.object({
-// 		id: z.string(),
-// 		name: z.string()
-// 	});
+	const data = mojangProfileSchema.parseAsync(await response.json());
 
-// 	const data = mojangProfileSchema.parseAsync(await response.json());
-
-// 	return data;
-// }
+	return data;
+}
