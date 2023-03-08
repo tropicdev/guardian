@@ -9,7 +9,7 @@ import { EVENTS } from '../../lib/constants';
 
 @ApplyOptions<Listener.Options>({ event: Events.GuildBanAdd, name: 'Handle Guild Member Ban' })
 export class MemberBan extends Listener {
-	public async run(guild: Guild, member: GuildMember, reason: string) {
+	public async run(guild: Guild, member: GuildMember) {
 		try {
 			if (member.user.bot) return;
 
@@ -37,8 +37,7 @@ export class MemberBan extends Listener {
 
 			const event = {
 				id: mojangProfile.id,
-				name: mojangProfile.name,
-				reason: reason
+				name: mojangProfile.name
 			};
 
 			io.emit(EVENTS.GUARDIAN_MEMBER_BAN, event);

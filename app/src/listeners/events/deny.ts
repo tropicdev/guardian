@@ -30,7 +30,7 @@ export class DenyButtonEvent extends Listener {
 
 			if (!application) return interaction.reply({ content: 'Could not find application in database', ephemeral: true });
 
-			const modal = new ModalBuilder().setCustomId(MODAL_IDS.REASON).setTitle('Botler');
+			const modal = new ModalBuilder().setCustomId(MODAL_IDS.REASON).setTitle('Guardian');
 
 			const member = await interaction.guild?.members.fetch(application.applicant_id);
 
@@ -99,7 +99,7 @@ export class DenyButtonEvent extends Listener {
 			const embed = new EmbedBuilder()
 				.setColor('Orange')
 				.setAuthor({
-					name: 'Botler',
+					name: 'Guardian',
 					iconURL: 'https://cdn.discordapp.com/avatars/1063626648399921170/60021a9282221d831512631d8e82b33d.png?size=100'
 				})
 				.setTitle(`${admin.user.tag} Denied your application`)

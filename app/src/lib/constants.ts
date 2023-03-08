@@ -3,14 +3,14 @@ import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 export const RandomLoadingMessage = ['Computing...', 'Thinking...', 'Cooking some food', 'Give me a moment', 'Loading...'];
 
 export const BUTTON_IDS = {
-	APPLY: 'BOTLER:MEMBER_APPLY',
-	ACCEPT: 'BOTLER:MEMBER_ACCEPT',
-	DENY: 'BOTLER:MEMBER_DENY'
+	APPLY: 'Guardian:MEMBER_APPLY',
+	ACCEPT: 'Guardian:MEMBER_ACCEPT',
+	DENY: 'Guardian:MEMBER_DENY'
 } as const;
 
 export const MODAL_IDS = {
-	REASON: 'BOTLER:REASON_MODAL',
-	ADMIN_REASON: 'BOTLER:REASON'
+	REASON: 'Guardian:REASON_MODAL',
+	ADMIN_REASON: 'Guardian:REASON'
 } as const;
 
 export const EVENTS = {

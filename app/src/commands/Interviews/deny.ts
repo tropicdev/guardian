@@ -65,7 +65,7 @@ export class UserCommand extends Command {
 				.setColor('Red')
 				.setTitle(`Denied`)
 				.setAuthor({
-					name: 'Botler',
+					name: 'Guardian',
 					iconURL: 'https://cdn.discordapp.com/avatars/1063626648399921170/60021a9282221d831512631d8e82b33d.png'
 				})
 				.addFields({ name: 'Reason', value: `${value}`, inline: true })
@@ -85,7 +85,7 @@ export class UserCommand extends Command {
 				.setColor('Red')
 				.setTitle(`Applicant Denied`)
 				.setAuthor({
-					name: 'Botler',
+					name: 'Guardian',
 					iconURL: 'https://cdn.discordapp.com/avatars/1063626648399921170/60021a9282221d831512631d8e82b33d.png'
 				})
 				.addFields({ name: 'Member', value: `${member}`, inline: true }, { name: 'Reason', value: `${value}`, inline: true })

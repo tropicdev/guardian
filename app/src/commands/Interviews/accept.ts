@@ -144,7 +144,7 @@ export class UserCommand extends Command {
 			.setColor('#0099ff')
 			.setTitle(`Link Created and Member Accepted`)
 			.setAuthor({
-				name: 'Botler',
+				name: 'Guardian',
 				iconURL: 'https://cdn.discordapp.com/avatars/1063626648399921170/60021a9282221d831512631d8e82b33d.png'
 			})
 			.addFields({ name: 'Discord Name', value: `${member}`, inline: true }, { name: 'IGN', value: `${mojangUser.name}`, inline: true })
