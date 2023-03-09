@@ -19,7 +19,7 @@ export const client = new SapphireClient({
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.MessageContent
 	],
-	partials: [Partials.Channel, Partials.GuildMember],
+	partials: [Partials.Channel, Partials.GuildMember, Partials.Message],
 	loadMessageCommandListeners: true
 });
 

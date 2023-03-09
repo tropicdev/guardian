@@ -62,6 +62,8 @@ export class AcceptButtonEvent extends Listener {
 				})
 				.execute();
 
+			await db.updateTable('application').set({ status: 'ACCEPTED' }).where('id', '=', interaction.message.id).execute();
+
 			Promise.all([thread.send(notification), thread.members.add(applicant), thread.members.add(interaction.member as GuildMember)]);
 
 			const newEmbed = EmbedBuilder.from(interaction.message.embeds[0])

@@ -6,7 +6,7 @@ export interface Application {
 	id: string;
 	applicant_id: string;
 	content: string;
-	status: Generated<'ACCEPTED' | 'DENIED' | 'PENDING'>;
+	status: Generated<'ACCEPTED' | 'DENIED' | 'PENDING' | 'DELETED'>;
 	submitted_at: Generated<Date>;
 	updated_at: Generated<Date>;
 }
@@ -15,6 +15,7 @@ export interface ApplicationMeta {
 	id: string;
 	admin_id: string;
 	response: string;
+	deleted: Generated<boolean>;
 	responded_at: Generated<Date>;
 }
 
