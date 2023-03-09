@@ -7,7 +7,6 @@ import { z } from 'zod';
 import { db } from '../../database/db';
 import { CONFIG } from '../../lib/setup';
 import { io } from '../../server/socket';
-import { EVENTS } from '../../lib/constants';
 
 @ApplyOptions<Command.Options>({
 	description: 'Accept Member',
@@ -156,7 +155,7 @@ export class UserCommand extends Command {
 			name: mojangUser.name
 		};
 
-		io.emit(EVENTS.GUARDIAN_MEMBER_ADD, event);
+		io.emit('add', event);
 
 		return await interaction.reply({ embeds: [embed] }).catch(async (err) => {
 			client.logger.error(err);
