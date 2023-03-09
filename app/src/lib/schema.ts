@@ -28,12 +28,12 @@ export const configSchema = z.object({
 		private: z.boolean()
 	}),
 	whitelist_manager: z.object({
+		enabled: z.boolean(),
 		inactivity: z.object({
-			remove_inactive_player_after: z.object({
-				time: z.number(),
-				unit: z.string()
-			}),
-			clean_whitelist_every: z.object({ time: z.number(), unit: z.string() })
+			message: z.string(),
+			vacation_role: z.string(),
+			remove_inactive_player_after_days: z.number(),
+			clean_whitelist_every_hrs: z.number()
 		})
 	}),
 	database: z.object({
