@@ -38,6 +38,7 @@ export interface Member {
 export interface Server {
 	id: Generated<string>;
 	name: Generated<string>;
+	token: Generated<string>;
 }
 
 export interface Session {
@@ -45,7 +46,7 @@ export interface Session {
 	server_id: string;
 	member_id: string;
 	session_start: Generated<Date>;
-	session_end: Generated<Date>;
+	session_end: Date | null;
 	invalid: Generated<number | null>;
 }
 
