@@ -1,12 +1,13 @@
 import { EmbedBuilder, TextChannel } from 'discord.js';
+import { sql } from 'kysely';
 import { Server } from 'socket.io';
 import { client } from '..';
 import { db } from '../database/db';
-import { EVENTS } from '../lib/constants';
 import { CONFIG } from '../lib/setup';
 
 type BanEvent = {
-	mojang_id: string;
+	id: string;
+	name: string;
 	reason: string;
 };
 
@@ -21,41 +22,63 @@ type Success = {
 	msg: string;
 };
 
+type Auth = {
+	token: string;
+	server_id: string;
+};
 export const io = new Server(CONFIG.api_port);
 
-io.on('connection', (socket) => {
-	if (socket.handshake.auth.token !== CONFIG.api_token) {
-		socket.disconnect(true);
-		return;
+io.use(async (socket, next) => {
+	const auth = socket.handshake.auth as Auth;
+
+	const server = await db.selectFrom('server').selectAll().where('id', '=', auth.server_id).executeTakeFirst();
+
+	if (!server) {
+		const err = new Error('not authorized');
+		err.message = 'Server is not registered';
+		return next(err);
 	}
 
-	client.logger.info('Socket connected');
+	if (server.token !== auth.token) {
+		const err = new Error('not authorized');
+		err.message = 'Token is not valid';
+		return next(err);
+	}
+
+	return next();
+});
+
+io.on('connection', (socket) => {
+	const server = socket.handshake.auth as Auth;
+
+	client.logger.info(`Socket connected: ${socket.id} | ${server.server_id}`);
 
 	socket.join(CONFIG.client_id);
 
-	socket.on(EVENTS.ELDER_MEMBER_BAN, async (msg: BanEvent) => {
+	socket.on('ban', async (msg: BanEvent) => {
+		socket.to(CONFIG.client_id).emit('ban', msg);
 		try {
 			const guild = await client.guilds.fetch(CONFIG.guild_id).catch((error) => {
 				client.logger.error(error);
 				return null;
 			});
 
-			if (!guild) return io.emit(EVENTS.SUCCESS, { success: false, msg: 'Guild not found' });
+			if (!guild) return io.emit('success', { success: false, msg: 'Guild not found' });
 
-			const member = await db.selectFrom('member').selectAll().where('mojang_id', '=', msg.mojang_id).executeTakeFirst();
+			const member = await db.selectFrom('member').selectAll().where('mojang_id', '=', msg.id).executeTakeFirst();
 
-			if (!member) return io.emit(EVENTS.SUCCESS, { success: false, msg: 'Member not found' });
+			if (!member) return io.emit('success', { success: false, msg: 'Member not found' });
 
 			const discordMember = await guild.members.fetch(member.discord_id).catch((error) => {
 				client.logger.error(error);
 				return null;
 			});
 
-			if (!discordMember) return io.emit(EVENTS.SUCCESS, { success: false, msg: 'Discord member not found' });
+			if (!discordMember) return io.emit('success', { success: false, msg: 'Discord member not found' });
 
 			await discordMember.ban({ reason: msg.reason }).catch((error) => {
 				client.logger.error(error);
-				io.emit(EVENTS.SUCCESS, { success: false, msg: 'Discord member could not be banned' });
+				io.emit('success', { success: false, msg: 'Discord member could not be banned' });
 				return null;
 			});
 
@@ -67,22 +90,23 @@ io.on('connection', (socket) => {
 				.execute()
 				.catch((error) => {
 					client.logger.error(error);
-					io.emit(EVENTS.SUCCESS, { success: false, msg: 'Failled to update database with banned player' });
+					io.emit('success', { success: false, msg: 'Failled to update database with banned player' });
 					return null;
 				});
 
-			return io.emit(EVENTS.SUCCESS, { success: true, msg: `Banned ${member.mojang_id}` });
+			return io.emit('success', { success: true, msg: `Banned ${member.mojang_id}` });
 		} catch (error) {
 			client.logger.error(error);
 			return;
 		}
 	});
 
-	socket.on(EVENTS.ELDER_MEMBER_SESSION_START, async (msg: SessionEvent) => {
+	socket.on('session-start', async (msg: SessionEvent) => {
+		socket.to(CONFIG.client_id).emit('session-start', msg);
 		try {
 			const member = await db.selectFrom('member').selectAll().where('mojang_id', '=', msg.mojang_id).executeTakeFirst();
 
-			if (!member) return io.emit(EVENTS.SUCCESS, { success: false, msg: 'Member not found' });
+			if (!member) return io.emit('success', { success: false, msg: 'Member not found' });
 
 			await db
 				.insertInto('session')
@@ -92,22 +116,23 @@ io.on('connection', (socket) => {
 				})
 				.execute();
 
-			return io.emit(EVENTS.SUCCESS, { success: true, msg: `Started session for ${member.mojang_id}` });
+			return io.emit('success', { success: true, msg: `Started session for ${member.mojang_id}` });
 		} catch (error) {
 			client.logger.error(error);
 			return;
 		}
 	});
 
-	socket.on(EVENTS.ELDER_MEMBER_SESSION_END, async (msg: SessionEvent) => {
+	socket.on('session-end', async (msg: SessionEvent) => {
+		socket.to(CONFIG.client_id).emit('session-end', msg);
 		try {
 			const member = await db.selectFrom('member').selectAll().where('mojang_id', '=', msg.mojang_id).executeTakeFirst();
 
-			if (!member) return io.emit(EVENTS.SUCCESS, { success: false, msg: 'Member not found' });
+			if (!member) return io.emit('success', { success: false, msg: 'Member not found' });
 
 			const session = await db.selectFrom('session').selectAll().where('member_id', '=', member.id).executeTakeFirst();
 
-			if (!session) return io.emit(EVENTS.SUCCESS, { success: false, msg: 'Session not found' });
+			if (!session) return io.emit('success', { success: false, msg: 'Session not found' });
 
 			await db
 				.updateTable('session')
@@ -117,14 +142,14 @@ io.on('connection', (socket) => {
 				.where('id', '=', session?.id)
 				.execute();
 
-			return io.emit(EVENTS.SUCCESS, { success: true, msg: `Ended session for ${member.mojang_id}` });
+			return io.emit('success', { success: true, msg: `Ended session for ${member.mojang_id}` });
 		} catch (error) {
 			client.logger.error(error);
 			return;
 		}
 	});
 
-	socket.on(EVENTS.SUCCESS, async (msg: Success) => {
+	socket.on('success', async (msg: Success) => {
 		try {
 			const console = (await client.channels.fetch(CONFIG.console_channel)) as TextChannel;
 
@@ -167,7 +192,22 @@ io.on('connection', (socket) => {
 		}
 	});
 
-	socket.on('disconnect', () => {
-		console.log('user disconnected');
+	socket.on('disconnect', async () => {
+		client.logger.info(`Socket disconnected: ${socket.id}`);
+
+		console.log(server.server_id);
+
+		try {
+			client.logger.info('Updating sessions');
+
+			await db
+				.updateTable('session')
+				.set({ session_end: new Date() })
+				.where(sql`session_end IS NULL AND server_id = ${server.server_id}`)
+				.execute();
+		} catch (error) {
+			client.logger.error(error);
+			return;
+		}
 	});
 });
