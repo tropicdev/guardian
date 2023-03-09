@@ -26,6 +26,7 @@ specifiers:
   discord-api-types: ^0.37.26
   discord.js: ^14.7.1
   dotenv: ^16.0.3
+  keyv: ^4.5.2
   kysely: ^0.23.5
   mysql2: ^3.2.0
   npm-run-all: ^4.1.5
@@ -55,6 +56,7 @@ dependencies:
   discord-api-types: 0.37.28
   discord.js: 14.7.1_larneflboxjikteesotr27lylu
   dotenv: 16.0.3
+  keyv: 4.5.2
   kysely: 0.23.5
   mysql2: 3.2.0
   reflect-metadata: 0.1.13
@@ -1840,6 +1842,10 @@ packages:
     resolution: {integrity: sha512-CuUqjv0FUZIdXkHPI8MezCnFCdaTAacej1TZYulLoAg1h/PhwkdXFN4V/gzY4g+fMBCOV2xF+rp7t2XD2ns/NQ==}
     dev: true
 
+  /json-buffer/3.0.1:
+    resolution: {integrity: sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==}
+    dev: false
+
   /json-parse-better-errors/1.0.2:
     resolution: {integrity: sha512-mrqyZKfX5EhL7hvqcV6WG1yYjnjeuYDzDhhcAAUrq8Po85NBQBJP+ZDUT75qZQ98IkUoBqdkExkukOU7Ts2wrw==}
     dev: true
@@ -1849,6 +1855,12 @@ packages:
     dependencies:
       json-buffer: 3.0.0
     dev: true
+
+  /keyv/4.5.2:
+    resolution: {integrity: sha512-5MHbFaKn8cNSmVW7BYnijeAVlE4cYA/SVkifVgrh7yotnfhKmjuXpDKjrABLnT0SfHWV21P8ow07OGfRrNDg8g==}
+    dependencies:
+      json-buffer: 3.0.1
+    dev: false
 
   /kysely/0.23.5:
     resolution: {integrity: sha512-TH+b56pVXQq0tsyooYLeNfV11j6ih7D50dyN8tkM0e7ndiUH28Nziojiog3qRFlmEj9XePYdZUrNJ2079Qjdow==}

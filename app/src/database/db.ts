@@ -1,7 +1,10 @@
 import { Kysely, MysqlDialect } from 'kysely';
-import type { DB } from './types';
+import type { DB } from './schema';
 import { createPool } from 'mysql2';
 import { CONFIG } from '../lib/setup';
+import Keyv from 'keyv';
+
+export const timeoutCache = new Keyv();
 
 export const db = new Kysely<DB>({
 	dialect: new MysqlDialect({

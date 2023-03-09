@@ -21,6 +21,7 @@
 		"discord-api-types": "^0.37.26",
 		"discord.js": "^14.7.1",
 		"dotenv": "^16.0.3",
+		"keyv": "^4.5.2",
 		"kysely": "^0.23.5",
 		"mysql2": "^3.2.0",
 		"reflect-metadata": "^0.1.13",
