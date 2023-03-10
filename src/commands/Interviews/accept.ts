@@ -135,9 +135,14 @@ export class UserCommand extends Command {
 			return interaction.reply({ content: 'Something went wrong trying to accept member', ephemeral: true });
 		});
 
+		await member.setNickname(member.displayName + `(${mojangUser.name})`).catch((error) => {
+			client.logger.error(error);
+			return interaction.reply({ content: 'Something went wrong trying to change nickname', ephemeral: true });
+		});
+
 		await acceptChannel.send(CONFIG.accept_message.replace('{member}', member.toString())).catch((error) => {
 			client.logger.error(error);
-			return interaction.reply({ content: 'Something went wrong trying to accept member', ephemeral: true });
+			return interaction.reply({ content: 'Something went wrong trying to send message', ephemeral: true });
 		});
 
 		const embed = new EmbedBuilder()
