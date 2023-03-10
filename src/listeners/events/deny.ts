@@ -94,7 +94,11 @@ export class DenyButtonEvent extends Listener {
 
 			await db.updateTable('application').set({ status: 'DENIED' }).where('id', '=', applicationId).execute();
 
-			const newEmbed = EmbedBuilder.from(interaction.message.embeds[0]).setColor('Red');
+			const newEmbed = EmbedBuilder.from(interaction.message.embeds[0])
+				.setColor('Red')
+				.setFooter({
+					text: `User Denied by ${interaction.user.username}\nReason: ${response}\n`
+				});
 			interaction.message.edit({ embeds: [newEmbed], components: [] });
 			const admin = interaction.member as GuildMember;
 
