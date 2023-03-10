@@ -13,6 +13,8 @@ node_modules/
 
 dist/
 
+Test/
+
 # Ignore the config file (contains sensitive information such as tokens)
 config.ts
 config.json
