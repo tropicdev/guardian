@@ -1,0 +1,43 @@
+{
+	"prefix": "",
+	"console_channel": "",
+	"bot_token": "",
+	"api_token": "",
+	"api_port": 8080,
+	"guild_id": "",
+	"client_id": "",
+	"status": "",
+	"join_channel": "",
+	"join_message": "Welcome to the server! To apply, click the button below.",
+	"accept_channel": "",
+	"accept_message": "",
+	"member_role": "",
+	"owners": [""],
+	"applications": {
+		"timeout": 5,
+		"channel": "",
+		"questions": ["Mayonnaise or Miracle Whip?"]
+	},
+	"interviews": {
+		"notification": "Hi, an admin will be with you shortly. {member}",
+		"role": "",
+		"channel": "",
+		"private": true
+	},
+	"whitelist_manager": {
+		"enabled": true,
+		"inactivity": {
+			"message": "You have been removed from the whitelist due to inactivity. If you wish to rejoin, please reapply.",
+			"vacation_role": "",
+			"remove_inactive_player_after_days": 60,
+			"clean_whitelist_every_hrs": 24
+		}
+	},
+	"database": {
+		"host": "localhost",
+		"port": 3306,
+		"user": "root",
+		"password": "password",
+		"name": "database"
+	}
+}
