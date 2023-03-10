@@ -24,6 +24,7 @@
 		"keyv": "^4.5.2",
 		"kysely": "^0.23.5",
 		"mysql2": "^3.2.0",
+		"node-cron": "^3.0.2",
 		"reflect-metadata": "^0.1.13",
 		"socket.io": "^4.6.1",
 		"zod": "^3.21.3"
