@@ -1,18 +1,24 @@
 name: Docker Image CI
-
 on:
   push:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-
 jobs:
-
   build:
-
     runs-on: self-hosted
-
     steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: sudo docker build . --file app/Dockerfile --tag guardian:$(date +%s)
+    
+    - name: Publish the Docker image
+      uses: actions/checkout@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build the Docker Image
+      run: |
+              sudo docker build . --file app/Dockerfile --tag ghcr.io/guardian:$(date +%s)
+              docker push ghcr.io/guardian:$(date +%s)
+        
+      
+      
