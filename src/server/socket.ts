@@ -63,18 +63,27 @@ io.on('connection', (socket) => {
 				return null;
 			});
 
-			if (!guild) return io.emit('success', { success: false, msg: 'Guild not found' });
+			if (!guild) {
+				client.logger.warn('Guild not found');
+				return io.emit('success', { success: false, msg: 'Guild not found' });
+			}
 
 			const member = await db.selectFrom('member').selectAll().where('mojang_id', '=', msg.id).executeTakeFirst();
 
-			if (!member) return io.emit('success', { success: false, msg: 'Member not found' });
+			if (!member) {
+				client.logger.warn('Member not found');
+				return io.emit('success', { success: false, msg: 'Member not found' });
+			}
 
 			const discordMember = await guild.members.fetch(member.discord_id).catch((error) => {
 				client.logger.error(error);
 				return null;
 			});
 
-			if (!discordMember) return io.emit('success', { success: false, msg: 'Discord member not found' });
+			if (!discordMember) {
+				client.logger.warn('Discord member not found');
+				return io.emit('success', { success: false, msg: 'Discord member not found' });
+			}
 
 			await discordMember.ban({ reason: msg.reason }).catch((error) => {
 				client.logger.error(error);
@@ -106,7 +115,10 @@ io.on('connection', (socket) => {
 		try {
 			const member = await db.selectFrom('member').selectAll().where('mojang_id', '=', msg.mojang_id).executeTakeFirst();
 
-			if (!member) return io.emit('success', { success: false, msg: 'Member not found' });
+			if (!member) {
+				client.logger.warn('Member not found');
+				return io.emit('success', { success: false, msg: 'Member not found' });
+			}
 
 			await db
 				.insertInto('session')
@@ -129,7 +141,10 @@ io.on('connection', (socket) => {
 		try {
 			const member = await db.selectFrom('member').selectAll().where('mojang_id', '=', msg.mojang_id).executeTakeFirst();
 
-			if (!member) return io.emit('success', { success: false, msg: 'Member not found' });
+			if (!member) {
+				client.logger.warn('Member not found');
+				return io.emit('success', { success: false, msg: 'Member not found' });
+			}
 
 			const session = await db
 				.selectFrom('session')
