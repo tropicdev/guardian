@@ -27,8 +27,7 @@ export const client = new SapphireClient({
 const main = async () => {
 	try {
 		client.logger.info('Guardian is starting up...');
-		await client.login(CONFIG.bot_token);
-		client.logger.info('Guardian is ready!');
+		await client.login(CONFIG.bot_token).then(() => client.logger.info('Guardian Is Alive!'));
 	} catch (error) {
 		client.logger.fatal(error);
 		client.destroy();
