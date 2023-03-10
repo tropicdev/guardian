@@ -49,9 +49,9 @@ io.use(async (socket, next) => {
 });
 
 io.on('connection', (socket) => {
-	const server = socket.handshake.auth as Auth;
+	socket.data.serverId = socket.handshake.auth.server_id;
 
-	client.logger.info(`Socket connected: ${socket.id} | ${server.server_id}`);
+	client.logger.info(`Socket connected: ${socket.id} | ${socket.data.serverId} ✅`);
 
 	socket.join(CONFIG.client_id);
 
@@ -125,12 +125,18 @@ io.on('connection', (socket) => {
 
 	socket.on('session-end', async (msg: SessionEvent) => {
 		socket.to(CONFIG.client_id).emit('session-end', msg);
+
 		try {
 			const member = await db.selectFrom('member').selectAll().where('mojang_id', '=', msg.mojang_id).executeTakeFirst();
 
 			if (!member) return io.emit('success', { success: false, msg: 'Member not found' });
 
-			const session = await db.selectFrom('session').selectAll().where('member_id', '=', member.id).executeTakeFirst();
+			const session = await db
+				.selectFrom('session')
+				.selectAll()
+				.where('member_id', '=', member.id)
+				.orderBy('session.id', 'desc')
+				.executeTakeFirst();
 
 			if (!session) return io.emit('success', { success: false, msg: 'Session not found' });
 
@@ -193,17 +199,14 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('disconnect', async () => {
-		client.logger.info(`Socket disconnected: ${socket.id}`);
-
-		console.log(server.server_id);
-
+		client.logger.info(`Socket disconnected: ${socket.id} || ${socket.data.serverId} ❌`);
 		try {
 			client.logger.info('Updating sessions');
 
 			await db
 				.updateTable('session')
 				.set({ session_end: new Date() })
-				.where(sql`session_end IS NULL AND server_id = ${server.server_id}`)
+				.where(sql`session_end IS NULL AND server_id = ${socket.data.serverId}`)
 				.execute();
 		} catch (error) {
 			client.logger.error(error);
