@@ -1,6 +1,6 @@
 import { ApplyOptions } from '@sapphire/decorators';
 import { Listener } from '@sapphire/framework';
-import { ButtonInteraction, EmbedBuilder, Events, GuildMember, Interaction, Message, TextChannel } from 'discord.js';
+import { ButtonInteraction, EmbedBuilder, Events, GuildMember, Interaction, Message, StageChannel, TextChannel } from 'discord.js';
 import { client } from '../..';
 import { db, timeoutCache } from '../../database/db';
 import { APPLICATION_ROW, BUTTON_IDS } from '../../lib/constants';
@@ -68,6 +68,8 @@ export class ApplyButtonEvent extends Listener {
 			const embed = new EmbedBuilder().setTitle(`Question: ${index}`).setDescription(question).setColor('Aqua').setTimestamp();
 
 			const { channel } = await member.send({ embeds: [embed] });
+
+			if (channel instanceof StageChannel) return;
 
 			const collector = channel.createMessageCollector({ filter });
 
