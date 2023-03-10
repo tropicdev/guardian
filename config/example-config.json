@@ -2,7 +2,6 @@
 	"prefix": "",
 	"console_channel": "",
 	"bot_token": "",
-	"api_token": "",
 	"api_port": 8080,
 	"guild_id": "",
 	"client_id": "",

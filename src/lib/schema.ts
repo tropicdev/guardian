@@ -5,7 +5,6 @@ export const configSchema = z.object({
 	prefix: z.string().default('!'),
 	console_channel: z.string(),
 	bot_token: z.string(),
-	api_token: z.string(),
 	api_port: z.number(),
 	guild_id: z.string(),
 	client_id: z.string(),
