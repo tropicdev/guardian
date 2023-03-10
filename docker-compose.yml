@@ -7,4 +7,4 @@ services:
       target: development
     ports: [8080:8080]
     volumes:
-      - ./app:/opt/app
+      - ./app:/home/container
