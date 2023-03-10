@@ -10,7 +10,7 @@ jobs:
 
   build:
 
-    runs-on: node:18-buster-slim
+    runs-on: self-hosted
 
     steps:
     - uses: actions/checkout@v3
