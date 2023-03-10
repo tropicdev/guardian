@@ -64,6 +64,30 @@ export async function purge() {
 				await console.send({ embeds: [embed] });
 				return client.logger.info(`Skipping member ${row.discord_id} as they are in the grace period`);
 			}
+
+			await db
+				.updateTable('member')
+				.set({ status: 'LEFT' })
+				.where('discord_id', '=', row.discord_id)
+				.execute()
+				.catch(async () => {
+					client.logger.warn(`Failed to update member ${row.discord_id} to LEFT`);
+					const embed = new EmbedBuilder()
+
+						.setColor('Red')
+						.setAuthor({
+							name: 'Guardian',
+							iconURL: 'https://cdn.discordapp.com/avatars/1063626648399921170/60021a9282221d831512631d8e82b33d.png'
+						})
+						.setTitle('Failed to Purge Member (Failed to Update Member Status in DB)')
+						.addFields([
+							{ name: 'Member ID', value: `<@${row.discord_id}>`, inline: true },
+							{ name: 'Mojang', value: mojangProfile?.name ? `${mojangProfile.name}` : `<@${row.discord_id}>`, inline: true }
+						])
+						.setTimestamp();
+					return await console.send({ embeds: [embed] });
+				});
+
 			const member = await guild.members.fetch(row.discord_id).catch(async () => {
 				client.logger.warn(`Failed to fetch member ${row.discord_id}`);
 
