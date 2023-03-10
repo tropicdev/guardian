@@ -32,7 +32,8 @@ export const configSchema = z.object({
 			message: z.string(),
 			vacation_role: z.string(),
 			remove_inactive_player_after_days: z.number(),
-			clean_whitelist_every_hrs: z.number()
+			clean_whitelist_every_hrs: z.number(),
+			grace_period_days: z.number()
 		})
 	}),
 	database: z.object({

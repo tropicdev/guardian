@@ -96,7 +96,8 @@ export class UserCommand extends Command {
 			.insertInto('member')
 			.values({
 				discord_id: member.id,
-				mojang_id: addDashes(mojangUser.id)
+				mojang_id: addDashes(mojangUser.id),
+				grace_period_end: new Date(Date.now() + 1000 * 60 * 60 * 24 * CONFIG.whitelist_manager.inactivity.grace_period_days)
 			})
 			.execute()
 			.catch((error) => {

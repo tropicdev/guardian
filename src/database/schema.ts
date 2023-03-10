@@ -32,6 +32,7 @@ export interface Member {
 	discord_id: string;
 	mojang_id: string;
 	status: Generated<'ACTIVE' | 'LEFT' | 'BANNED'>;
+	grace_period_end: Generated<Date>;
 	joined_at: Generated<Date>;
 	updated_at: Generated<Date>;
 }

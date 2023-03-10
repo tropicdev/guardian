@@ -29,7 +29,8 @@
 			"message": "You have been removed from the whitelist due to inactivity. If you wish to rejoin, please reapply.",
 			"vacation_role": "",
 			"remove_inactive_player_after_days": 60,
-			"clean_whitelist_every_hrs": 24
+			"clean_whitelist_every_hrs": 24,
+			"grace_period_days": 7
 		}
 	},
 	"database": {
