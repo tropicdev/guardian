@@ -134,7 +134,7 @@ io.on('connection', (socket) => {
 			const session = await db
 				.selectFrom('session')
 				.selectAll()
-				.where('member_id', '=', member.id)
+				.where(sql`member_id = ${member.id} AND server_id = ${msg.server_id} AND session_end IS NULL`)
 				.orderBy('session.id', 'desc')
 				.executeTakeFirst();
 
@@ -145,7 +145,7 @@ io.on('connection', (socket) => {
 				.set({
 					session_end: new Date()
 				})
-				.where('id', '=', session?.id)
+				.where('id', '=', session.id)
 				.execute();
 
 			return io.emit('success', { success: true, msg: `Ended session for ${member.mojang_id}` });
