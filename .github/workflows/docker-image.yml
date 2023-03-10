@@ -18,7 +18,7 @@ jobs:
     - name: Build the Docker Image
       run: |
               sudo docker build . --file app/Dockerfile --tag ghcr.io/guardian:$(date +%s)
-              docker push ghcr.io/guardian:$(date +%s)
+              sudo docker push ghcr.io/guardian:$(date +%s)
         
       
       
