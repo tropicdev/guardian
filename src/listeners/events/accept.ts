@@ -28,14 +28,6 @@ export class AcceptButtonEvent extends Listener {
 	}
 	private async createInterview(applicant: GuildMember, interaction: ButtonInteraction) {
 		try {
-			await interaction.guild!.members.fetch();
-
-			const adminRole = await interaction.guild!.roles.fetch(CONFIG.admin_role);
-
-			if (!adminRole) return interaction.reply({ content: 'Could not find admin role', ephemeral: true });
-
-			const admins = adminRole.members.map((member) => member);
-
 			const settings = {
 				interviewRole: CONFIG.interviews.role,
 				interviewChannel: CONFIG.interviews.channel,
@@ -76,13 +68,11 @@ export class AcceptButtonEvent extends Listener {
 
 			await thread.send(notification);
 
-			for (const member of admins) {
-				await thread.members.add(member).catch((error) => {
-					client.logger.error(error);
-					interaction.reply({ content: 'Could not add admin to thread', ephemeral: true });
-					return;
-				});
-			}
+			const admin = interaction.member as GuildMember;
+
+			if (!admin) return interaction.reply({ content: 'Could not find admin', ephemeral: true });
+
+			await thread.members.add(admin);
 
 			const newEmbed = EmbedBuilder.from(interaction.message.embeds[0])
 				.setColor('Green')
