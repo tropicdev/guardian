@@ -64,7 +64,27 @@ export class AcceptButtonEvent extends Listener {
 
 			await db.updateTable('application').set({ status: 'ACCEPTED' }).where('id', '=', interaction.message.id).execute();
 
-			Promise.all([thread.send(notification), thread.members.add(applicant), thread.members.add(interaction.member as GuildMember)]);
+			const adminRole = await interaction.guild?.roles.fetch(CONFIG.admin_role).catch((error) => {
+				client.logger.error(error);
+				interaction.reply({ content: 'Could not find admin role', ephemeral: true });
+				return null;
+			});
+
+			if (!adminRole) return;
+
+			const membersWithRole = adminRole.members;
+
+			Promise.all([
+				await thread.members.add(applicant),
+				await thread.send(notification),
+				membersWithRole.forEach(async (member) => {
+					thread.members.add(member).catch((error) => {
+						client.logger.error(error);
+						interaction.reply({ content: 'Could not add admin to thread', ephemeral: true });
+						return;
+					});
+				})
+			]);
 
 			const newEmbed = EmbedBuilder.from(interaction.message.embeds[0])
 				.setColor('Green')

@@ -14,6 +14,7 @@ export const configSchema = z.object({
 	accept_channel: z.string(),
 	accept_message: z.string(),
 	member_role: z.string(),
+	admin_role: z.string(),
 	owners: z.string().array(),
 	applications: z.object({
 		timeout: z.number(),
