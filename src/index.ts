@@ -10,12 +10,12 @@ export const client = new SapphireClient({
 	regexPrefix: /^(hey +)?bot[,! ]/i,
 	caseInsensitiveCommands: true,
 	logger: {
-		level: LogLevel.Debug
+		level: process.env.NODE_ENV === 'development' ? LogLevel.Debug : LogLevel.Info
 	},
 	shards: 'auto',
 	intents: [
 		GatewayIntentBits.DirectMessages,
-		GatewayIntentBits.GuildBans,
+		GatewayIntentBits.GuildModeration,
 		GatewayIntentBits.GuildMembers,
 		GatewayIntentBits.GuildMessages,
 		GatewayIntentBits.Guilds,
