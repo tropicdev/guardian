@@ -1,130 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+    provider = "sqlite"
+    // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
+    // Further reading:
+    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
+    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
+    url      = env("DATABASE_URL")
 }
 
-model application {
-  id               String             @id @db.VarChar(30)
-  applicant_id     String             @db.VarChar(30)
-  content          String             @db.Text
-  status           application_status @default(PENDING)
-  submitted_at     DateTime           @default(now()) @db.Timestamp(3)
-  updated_at       DateTime           @default(dbgenerated("(_utf8mb4\\'0000-00-00 00:00:00.000\\')")) @db.Timestamp(3)
-  application_meta application_meta?
-  interview        interview[]
+model Example {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
-model application_meta {
-  id           String      @id @db.VarChar(30)
-  admin_id     String      @db.VarChar(30)
-  response     String      @db.Text
-  deleted      Boolean     @default(false)
-  responded_at DateTime    @default(now()) @db.Timestamp(3)
-  application  application @relation(fields: [id], references: [id], onUpdate: Restrict, map: "application_meta_ibfk_1")
-}
-
-model interview {
-  thread_id      String           @id @db.VarChar(30)
-  application_id String           @db.VarChar(30)
-  status         interview_status @default(ONGOING)
-  created_at     DateTime         @default(now()) @db.Timestamp(3)
-  updated_at     DateTime         @default(dbgenerated("(_utf8mb4\\'0000-00-00 00:00:00.000\\')")) @db.Timestamp(3)
-  application    application      @relation(fields: [application_id], references: [id], onUpdate: Restrict, map: "interview_ibfk_1")
-
-  @@index([application_id], map: "application_id")
-}
-
-model member {
-  id               Int            @id @default(autoincrement())
-  discord_id       String         @unique(map: "discord_id") @db.VarChar(30)
-  mojang_id        String         @unique(map: "mojang_id") @db.VarChar(36)
-  status           member_status? @default(ACTIVE)
-  grace_period_end DateTime       @default(dbgenerated("(now(3) + interval 7 day)")) @db.Timestamp(3)
-  joined_at        DateTime       @default(now()) @db.Timestamp(3)
-  updated_at       DateTime       @default(dbgenerated("(_utf8mb4\\'0000-00-00 00:00:00.000\\')")) @db.Timestamp(3)
-}
-
-model server {
-  id    String  @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
-  name  String  @default("Minecraft Server") @db.VarChar(100)
-  token String? @db.VarChar(15)
-}
-
-model session {
-  id            Int       @id @default(autoincrement())
-  server_id     String    @db.VarChar(36)
-  member_id     Int
-  session_start DateTime  @default(now()) @db.Timestamp(3)
-  session_end   DateTime? @db.Timestamp(3)
-  invalid       Boolean?  @default(false)
-}
-
+// Necessary for Next auth
 model Account {
-  id                String  @id
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? // @db.Text
+    access_token      String? // @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? // @db.Text
+    session_state     String?
+    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([provider, providerAccountId])
-  @@index([userId], map: "Account_userId_fkey")
+    @@unique([provider, providerAccountId])
 }
 
 model Session {
-  id           String   @id
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId], map: "Session_userId_fkey")
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id            String    @id
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  Account       Account[]
-  Session       Session[]
+    id            String    @id @default(cuid())
+    name          String?
+    email         String?   @unique
+    emailVerified DateTime?
+    image         String?
+    accounts      Account[]
+    sessions      Session[]
 }
 
 model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
+    identifier String
+    token      String   @unique
+    expires    DateTime
 
-  @@unique([identifier, token])
-}
-
-enum interview_status {
-  ONGOING
-  ACCEPTED
-  DENIED
-}
-
-enum application_status {
-  PENDING
-  ACCEPTED
-  DENIED
-  DELETED
-}
-
-enum member_status {
-  ACTIVE
-  LEFT
-  BANNED
+    @@unique([identifier, token])
 }
